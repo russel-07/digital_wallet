@@ -1,36 +1,36 @@
+import environ
 import string
 import secrets
+
+from pathlib import Path
 
 from .models import Wallet
 
 
-WALLET_NAME_SYM_COUNT = 8
-BANK_BONUS_RUB = 100.00
-BANK_BONUS_USD = 3.00
-BANK_BONUS_EUR = 3.00
-MAX_USER_WALLET_COUNTER = 5
-COMMISSION_COEFF = 0.10
+BASE_DIR = Path(__file__).resolve().parent.parent
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / '../.env')
 
 
 def get_wallet_name() -> str:
     wallet_name = ''.join(secrets.choice(string.ascii_uppercase+string.digits)
-                          for _ in range(WALLET_NAME_SYM_COUNT))
+                          for _ in range(int(env('WALLET_NAME_SYM_COUNT'))))
     return wallet_name
 
 
 def get_bank_bonus(currency: str) -> float:
     match currency:
         case 'rub':
-            bonus = BANK_BONUS_RUB
+            bonus = env('BANK_BONUS_RUB')
         case 'usd':
-            bonus = BANK_BONUS_USD
+            bonus = env('BANK_BONUS_USD')
         case 'eur':
-            bonus = BANK_BONUS_EUR
-    return bonus
+            bonus = env('BANK_BONUS_EUR')
+    return float(bonus)
 
 
 def check_user_wallet_count(user) -> bool:
-    return user.wallets.count() < MAX_USER_WALLET_COUNTER
+    return user.wallets.count() < int(env('MAX_USER_WALLET_COUNTER'))
 
 
 def check_currency_compatibility(sender_wallet: Wallet,
@@ -47,5 +47,5 @@ def get_commission(sender_wallet: Wallet, receiver_wallet: Wallet,
                    transfer_amount: float) -> float:
     commission = 0.00
     if sender_wallet.owner != receiver_wallet.owner:
-        commission = transfer_amount * COMMISSION_COEFF
+        commission = transfer_amount * float(env('COMMISSION_COEFF'))
     return commission

@@ -6,14 +6,12 @@ from .models import Wallet, Transaction
 
 class IsWalletOwner(BasePermission):
     def has_permission(self, request, view):
-        if request.method == 'POST':
-            wallet = get_object_or_404(Wallet, name=request.data['sender'])
-            return bool(
-                request.user and
-                request.user.is_authenticated and
-                request.user == wallet.owner
-            )
-        return True
+        wallet = get_object_or_404(Wallet, name=request.data['sender'])
+        return bool(
+            request.user and
+            request.user.is_authenticated and
+            request.user == wallet.owner
+        )
 
 
 class IsTransactionAuthor(BasePermission):

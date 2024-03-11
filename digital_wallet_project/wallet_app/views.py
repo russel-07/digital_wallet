@@ -3,12 +3,11 @@ from django.db.models import Q
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.exceptions import ValidationError 
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
 from decimal import Decimal
 
 from .models import Wallet, Transaction
-# from .serializers import UserSerializer
 from .serializers import WalletSerializer, TransactionSerializer
 from .permissions import IsWalletOwner, IsTransactionAuthor
 from .utils import get_wallet_name, get_bank_bonus, get_commission
@@ -19,14 +18,8 @@ from .utils import check_user_wallet_count
 User = get_user_model()
 
 
-# class UserViewSet(viewsets.ModelViewSet):
-#     serializer_class = UserSerializer
-#     http_method_names = ('post')
-
-
 class WalletViewSet(viewsets.ModelViewSet):
     serializer_class = WalletSerializer
-    permission_classes = [IsAuthenticated]
     http_method_names = ('get', 'post', 'delete')
     lookup_field = 'name'
 
@@ -45,8 +38,14 @@ class WalletViewSet(viewsets.ModelViewSet):
 
 class TransactionListCreate(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
-    permission_classes = [IsWalletOwner]
     http_method_names = ('get', 'post')
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            permission_classes = [IsWalletOwner]
+        else:
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         return Transaction.objects.filter(sender__owner=self.request.user)
@@ -62,7 +61,7 @@ class TransactionListCreate(viewsets.ModelViewSet):
         full_amount = amount + commission
         check_money = check_money_in_wallet(sender, full_amount)
         if (check_currency_compatibility(sender, receiver) and
-            check_money):
+                check_money):
             with transaction.atomic():
                 sender.balance -= Decimal(full_amount)
                 sender.save()
