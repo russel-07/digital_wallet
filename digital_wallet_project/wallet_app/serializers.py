@@ -1,24 +1,24 @@
-from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.hashers import make_password
+# from django.contrib.auth import get_user_model, password_validation
+# from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from .models import Wallet, Transaction
 
 
-User = get_user_model()
+# User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+# class UserSerializer(serializers.ModelSerializer):
 
-    password = serializers.CharField(write_only=True)
+#     password = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'password']
+#     class Meta:
+#         model = User
+#         fields = ['id', 'username', 'password']
 
-    def validate_password(self, value):
-        password_validation.validate_password(value)
-        return make_password(value)
+#     def validate_password(self, value):
+#         password_validation.validate_password(value)
+#         return make_password(value)
 
 
 class WalletSerializer(serializers.ModelSerializer):

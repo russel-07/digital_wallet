@@ -29,7 +29,7 @@ class Wallet(models.Model):
                               related_name='wallets',
                               verbose_name='Собственник')
     created_on = models.DateTimeField('Дата создания', auto_now_add=True)
-    modified_on = models.DateTimeField('Дата изменения', auto_now_add=True)
+    modified_on = models.DateTimeField('Дата изменения', auto_now=True)
 
     def __str__(self):
         return self.name

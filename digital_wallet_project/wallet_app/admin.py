@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.auth.models import Group
+# from django.contrib.auth.models import Group
 
 from .models import Wallet, Transaction
 
@@ -16,4 +16,4 @@ class TransactionAdmin(admin.ModelAdmin):
 
 admin.site.register(Wallet, WalletAdmin)
 admin.site.register(Transaction, TransactionAdmin)
-admin.site.unregister(Group)
+# admin.site.unregister(Group)

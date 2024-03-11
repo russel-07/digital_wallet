@@ -157,7 +157,3 @@ cython_debug/
 
 *.service
 *.json
-
-**/migrations/**
-!**/migrations
-!**/migrations/__init__.py
