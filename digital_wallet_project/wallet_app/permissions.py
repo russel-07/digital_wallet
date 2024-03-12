@@ -1,31 +1,16 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import BasePermission
 
-from .models import Wallet, Transaction
+from .models import Wallet
 
 
-class IsWalletOwner(BasePermission):
+class IsOwner(BasePermission):
     def has_permission(self, request, view):
-        wallet = get_object_or_404(Wallet, name=request.data['sender'])
-        return bool(
-            request.user and
-            request.user.is_authenticated and
-            request.user == wallet.owner
-        )
-
-
-class IsTransactionAuthor(BasePermission):
-    def has_permission(self, request, view):
-        param = view.kwargs.get('param')
-        if param.isdigit():
-            transaction = get_object_or_404(Transaction, pk=param)
-            return bool(
-                request.user and
-                request.user.is_authenticated and
-                (request.user == transaction.sender.owner or
-                 request.user == transaction.receiver.owner)
-                )
-        wallet = get_object_or_404(Wallet, name=param)
+        if 'wallet_name' in view.kwargs.keys():
+            wallet = get_object_or_404(Wallet, name=view.kwargs
+                                       .get('wallet_name'))
+        else:
+            wallet = get_object_or_404(Wallet, name=request.data['sender'])
         return bool(
             request.user and
             request.user.is_authenticated and

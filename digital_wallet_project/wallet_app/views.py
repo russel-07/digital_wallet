@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from .models import Wallet, Transaction
 from .serializers import WalletSerializer, TransactionSerializer
-from .permissions import IsWalletOwner, IsTransactionAuthor
+from .permissions import IsOwner
 from .utils import get_wallet_name, get_bank_bonus, get_commission
 from .utils import check_currency_compatibility, check_money_in_wallet
 from .utils import check_user_wallet_count
@@ -42,7 +42,7 @@ class TransactionListCreate(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            permission_classes = [IsWalletOwner]
+            permission_classes = [IsOwner]
         else:
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
@@ -82,17 +82,12 @@ class TransactionListCreate(viewsets.ModelViewSet):
 
 class TransactionRetrieve(viewsets.ModelViewSet):
     serializer_class = TransactionSerializer
-    permission_classes = [IsTransactionAuthor]
+    permission_classes = [IsOwner]
     http_method_names = ('get')
 
     def get_queryset(self):
-        param = self.kwargs.get('param')
-        if param.isdigit():
-            transaction = Transaction.objects.filter(pk=param)
-            return transaction
-        else:
-            wallet = get_object_or_404(Wallet, name=param)
-            wallet_transactions = (Transaction.objects
-                                   .filter(Q(sender=wallet) |
-                                           Q(receiver=wallet)))
-            return wallet_transactions
+        wallet = get_object_or_404(Wallet, name=self.kwargs
+                                   .get('wallet_name'))
+        wallet_transactions = (Transaction.objects
+                               .filter(Q(sender=wallet) | Q(receiver=wallet)))
+        return wallet_transactions
