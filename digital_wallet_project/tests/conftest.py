@@ -1,5 +1,6 @@
 import pytest
 
+from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from wallet_app.models import Wallet, Transaction
@@ -61,11 +62,12 @@ def wallet_2_usd(user_2):
 
 @pytest.fixture
 def create_five_wallets(user_1):
-    for i in range(5):
-        Wallet.objects.create(name=123456 + i, owner=user_1, balance=100,
-                              currency='rub', payment_system='visa')
-    yield
-    Wallet.objects.all().delete()
+    wallets = [Wallet.objects.create(name=123456 + i, owner=user_1,
+                                     balance=100, currency='rub',
+                                     payment_system='visa') for i in range(5)]
+    yield wallets
+    for wallet in wallets:
+        wallet.delete()
 
 
 @pytest.fixture
@@ -80,79 +82,76 @@ def transaction(wallet_1_rub, wallet_2_rub):
 
 @pytest.fixture
 def user_url():
-    return '/api/v1/user/'
+    return reverse('User-list')
 
 
 @pytest.fixture
 def wallet_url():
-    return '/api/v1/wallets/'
+    return reverse('Wallet-list')
 
 
 @pytest.fixture
-def wallet_url_with_wallet_name(wallet_url, wallet_1_rub):
-    return f'{wallet_url}{wallet_1_rub.name}/'
+def wallet_url_with_wallet_name(wallet_1_rub):
+    return reverse('Wallet-detail',
+                   kwargs={'name': wallet_1_rub.name})
 
 
 @pytest.fixture
 def transaction_url():
-    return '/api/v1/wallets/transactions/'
+    return reverse('Transaction-list')
 
 
 @pytest.fixture
-def transaction_url_with_id(transaction_url, transaction):
-    return f'{transaction_url}{transaction.id}/'
+def transaction_url_with_id(transaction):
+    return reverse('Transaction-detail',
+                   kwargs={'pk': transaction.id})
 
 
 @pytest.fixture
 def wallet_transactions_url(transaction):
-    return f'/api/v1/wallets/{transaction.sender}/transactions/'
+    return reverse('WalletTransaction-list',
+                   kwargs={'wallet_name': transaction.sender})
 
 
 @pytest.fixture
 def post_success_user_data():
-    data = {'username': 'test_user', 'password': 'test_password'}
-    return data
+    return {'username': 'test_user', 'password': 'test_password'}
 
 
 @pytest.fixture
 def post_failed_user_data():
-    data = {'username': 'test_user', 'password': '123'}
-    return data
+    return {'username': 'test_user', 'password': '123'}
 
 
 @pytest.fixture
 def post_wallet_data():
-    data = {'currency': 'rub', 'payment_system': 'mastercard'}
-    return data
+    return {'currency': 'rub', 'payment_system': 'mastercard'}
 
 
 @pytest.fixture
 def post_paid_transaction_data(wallet_1_rub, wallet_2_rub):
-    data = {
+    return {
         'sender': wallet_1_rub,
         'receiver': wallet_2_rub,
         'transfer_amount': 50
         }
-    return data
 
 
 @pytest.fixture
 def post_failed_transaction_data_with_other_currency(
         wallet_1_rub, wallet_2_usd):
-    data = {
+    return {
         'sender': wallet_1_rub,
         'receiver': wallet_2_usd,
         'transfer_amount': 50
         }
-    return data
 
 
 @pytest.fixture
 def post_failed_transaction_data_with_missing_amount_money(
         wallet_1_rub, wallet_2_rub):
-    data = {
+    return {
         'sender': wallet_1_rub,
         'receiver': wallet_2_rub,
         'transfer_amount': 200
         }
-    return data

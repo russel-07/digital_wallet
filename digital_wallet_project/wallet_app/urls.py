@@ -9,7 +9,7 @@ router = DefaultRouter()
 router.register('wallets/transactions', TransactionListCreate,
                 basename='Transaction')
 router.register(r'wallets/(?P<wallet_name>[0-9, A-Z]+)/transactions',
-                TransactionRetrieve, basename='Transaction')
+                TransactionRetrieve, basename='WalletTransaction')
 router.register('wallets', WalletViewSet, basename='Wallet')
 
 
